@@ -1,0 +1,26 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:RSA.Styles">
+    <Color x:Key="Red">#bb2e20</Color>
+    <SolidColorBrush x:Key="RedBrash" Color="{StaticResource Red}" />
+
+    <Color x:Key="WhiteCream">#e6e6e6</Color>
+    <SolidColorBrush x:Key="WhiteCreamBrash" Color="{StaticResource WhiteCream}" />
+
+    <Color x:Key="Gray">#838585</Color>
+    <SolidColorBrush x:Key="GrayBrash" Color="{StaticResource Gray}" />
+
+    <Color x:Key="TopGray">#454548</Color>
+    <SolidColorBrush x:Key="TopGrayBrash" Color="{StaticResource TopGray}" />
+
+    <Color x:Key="Graphite">#303030</Color>
+    <SolidColorBrush x:Key="GraphiteBrash" Color="{StaticResource Graphite}" />
+
+    <Color x:Key="LightGray">#515155</Color>
+    <SolidColorBrush x:Key="LightGrayBrash" Color="{StaticResource LightGray}" />
+
+    <SolidColorBrush x:Key="MainBarBrash" Color="{StaticResource Graphite}"/>
+    <SolidColorBrush x:Key="BackgroundOfPagesBrash" Color="{StaticResource LightGray}"/>
+    <SolidColorBrush x:Key="FontsBrash" Color="{StaticResource WhiteCream}"/>
+    <SolidColorBrush x:Key="EnabledBrash" Color="{StaticResource LightGray}"/>
+</ResourceDictionary>

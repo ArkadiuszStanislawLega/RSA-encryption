@@ -1,0 +1,237 @@
+﻿<Window x:Class="RSA.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RSA"
+        AllowsTransparency="True"
+        WindowStartupLocation="CenterScreen"
+        Background="Transparent"
+        WindowStyle="None"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="1000">
+    <StackPanel>
+        <!--#region Top Window Title-->
+        <Grid Name="TitlePanel"
+              Width="auto" Height="30"
+              MouseLeftButtonDown="TopBarContent_MouseDown">
+            <Border CornerRadius="10 10 0 0" 
+                        Background="{StaticResource TopGrayBrash}" 
+                        Opacity="0.7"
+                        Margin="0 0 0 1"/>
+            <Grid >
+                <!--#region ColumnDefinitions-->
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <!--#endregion-->
+                <TextBlock Text="Szyfrowanie RSA" FontSize="20" 
+                           Padding="3"
+                           TextAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource GrayBrash}"
+                           FontWeight="Bold"  
+                           Height="40" 
+                           Margin="5"/>
+                <StackPanel
+                        Name="TitlePanelButtons"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal"
+                        Grid.Column="2"
+                        Margin="0 0 25 0">
+
+                    <Button Name="Minimize" 
+                        Style="{StaticResource FAMinimizeButton}"
+                        Click="Minimize_Click"/>
+                    <Button Name="Exit" 
+                        Style="{StaticResource FAExitButton}"
+                        Click="Exit_Click" />
+
+                </StackPanel>
+            </Grid>
+        </Grid>
+        <!--#endregion-->
+
+        <Grid>
+            <Border Margin="0" Background="{StaticResource MainBarBrash}" CornerRadius="0 0 60 60" />
+            <Grid >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <!--#region RadioButtons-->
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="Wybierz które klucze mają być eksportowane:"/>
+                    <RadioButton Name="rbPublicAndPrivateKey" 
+                                 Content="Klucz publiczny i prywatny" 
+                                 IsChecked="True"
+                                 GroupName="ExsportKey"
+                                 />
+                    <RadioButton Name="rbPublicKey" 
+                                 Content="Klucz publiczny"
+                                 GroupName="ExsportKey"/>
+                    <Separator/>
+                    <TextBlock Text="Którego klucza użyć do odszyfrowania wiadomości:"/>
+                    <RadioButton Name="rbPublicAndPrivateKeyEncrypt" 
+                                 Content="Klucz publiczny i prywatny" 
+                                 IsChecked="True"
+                                 GroupName="EncryptKey"/>
+                    <RadioButton Name="rbPublicKeyEncrpyt" 
+                                 Content="Klucz publiczny"
+                                 GroupName="EncryptKey"/>
+                    <Separator/>
+                    <TextBlock Text="Którego klucza użyć do odszyfrowania wiadomości:"/>
+                    <RadioButton Name="rbPublicAndPrivateKeyDecrypt" 
+                                 Content="Klucz publiczny i prywatny" 
+                                 IsChecked="True"
+                                 GroupName="DecryptKey"/>
+                    <RadioButton Name="rbPublicKeyDecrypt" 
+                                 Content="Klucz publiczny"
+                                 GroupName="DecryptKey"/>
+                    <Separator/>
+                    <StackPanel>
+                        <TextBlock Text="Czy klucz ma zostać zaszyfrowany w wiadomości:"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <RadioButton Name="rbKeyInMassageEncryptYes" 
+                                         Content="Tak" 
+                                         IsChecked="True"
+                                         GroupName="KeyInMessageEncrypt"/>
+                            <RadioButton Name="rbKeyInMassageEncryptNo" 
+                                         Content="Nie"
+                                         GroupName="KeyInMessageEncrypt"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <Separator/>
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="Czy został zaszyforwany w wiadomości:"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <RadioButton Name="rbKeyInMassageDecryptYes" 
+                                         Content="Tak" 
+                                         IsChecked="True"
+                                         GroupName="KeyInMessageDecrypt"/>
+                            <RadioButton Name="rbKeyInMassageDecryptNo" 
+                                         Content="Nie"
+                                         GroupName="KeyInMessageDecrypt"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+                <!--#endregion-->
+                <!--#region Messages-->
+                <Border BorderThickness="3"   Grid.Column="0"
+                        BorderBrush="{StaticResource GrayBrash}" Margin="60 10 10 10"
+                        CornerRadius="5 5 5 5">
+                    <StackPanel  
+                                Orientation="Vertical" 
+                                HorizontalAlignment="Right"
+                                Width="400"
+                                Background="{StaticResource BackgroundOfPagesBrash}">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Auto" 
+                                      MaxHeight="40"
+                                      MaxWidth="400">
+                            <TextBlock Name="tbCreateAsmKey" 
+                                   TextAlignment="Left" 
+                                   VerticalAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   Margin="10"
+                                   MaxHeight="40"/>
+                        </ScrollViewer>
+                        <Separator/>
+
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Auto" 
+                                      Height="50">
+                            <TextBlock Name="tbChosenMessage" 
+                                   TextAlignment="Left" 
+                                   MaxHeight="50"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center"
+                                   Margin="0 0 0 2" 
+                                   ScrollViewer.CanContentScroll="True"/>
+                        </ScrollViewer>
+                        <Separator/>
+                        <TextBlock Name="tbEncryptMessage" 
+                                   TextAlignment="Center" 
+                                   VerticalAlignment="Center"
+                                   Margin="10"/>
+                        <Separator/>
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Auto" 
+                                      MaxHeight="50">
+                            <TextBlock Name="tbEncryptedChosenMessage" 
+                                   TextAlignment="Left" 
+                                   VerticalAlignment="Center"
+                                   MaxHeight="50"
+                                   Margin="0 0 50 2"/>
+                        </ScrollViewer>
+                        <Separator/>
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Auto" 
+                                      MaxHeight="50">
+                            <TextBlock Name="tbDecryptMessage" 
+                                        TextAlignment="Left" 
+                                        VerticalAlignment="Center"
+                                        Margin="0 0 50 2"
+                                        Height="30"/>
+                        </ScrollViewer>
+                        <Separator/>
+                        <TextBlock Name="tbExportPrivateKey"  
+                                   TextAlignment="Center" 
+                                   VerticalAlignment="Center"/>
+                        <Separator/>
+                        <TextBlock Name="tbImportKey" 
+                                   TextAlignment="Center" 
+                                   VerticalAlignment="Center"/>
+                        <Separator/>
+                    </StackPanel>
+                </Border>
+                <!--#endregion-->
+                <!--#region Buttons-->
+                <Border BorderThickness="3"   Grid.Column="2" Background="{StaticResource EnabledBrash}"
+                            BorderBrush="{StaticResource GrayBrash}" Margin="5 10 35 10"
+                        CornerRadius="10 10 10 10">
+                    <StackPanel Orientation="Vertical">
+                        <Button Content="Tworzenie kluczy asymetrycznych"  
+                                Name="buttonCreateAsmKey" 
+                                Click="buttonCreateAsmKeys_Click"
+                                />
+
+                        <Button Content="Wybierz plik do zaszyfrowania"  
+                                Name="ChoseFileToEncrpyt" 
+                                Click="buttonChoseFileToEncrypt_Click" 
+                                />
+
+                        <Button Content="Zaszyfruj"  
+                                Name="buttonEncryptFile" 
+                                Click="buttonEncryptFile_Click" 
+                                />
+
+                        <Button Content="Wybierz plik do odszyfrowania"  
+                                Name="buttonChoseFileToDecrpyt" 
+                                Click="buttonChoseDecryptFile_Click" 
+                                />
+
+                        <Button Content="Odszyfruj"  
+                                Name="buttonDecryptFile" 
+                                Click="buttonDecryptFile_Click" 
+                                />
+
+                        <Button Content="Eksport klucza publicznego" 
+                                Name="buttonExportPublickKey" 
+                                Click="buttonExportPublicKey_Click"
+                                />
+
+                        <Button Content="Import zapisanego klucza" 
+                                Name="buttonImportPublicKey" 
+                                Click="buttonImportKey_Click"
+                                />
+                    </StackPanel>
+                </Border>
+                <!--#endregion-->
+            </Grid>
+        </Grid>
+    </StackPanel>
+</Window>
