@@ -72,8 +72,6 @@ namespace RSA
 
             this.cspp = new CspParameters();
             this.cspp.KeyContainerName = KEY_NAME;
-
-            this.RSAdecrypt = new RSACryptoServiceProvider(this.cspp);
         }
 
         #region IsXpOrHigher
@@ -154,27 +152,31 @@ namespace RSA
             catch (UnauthorizedAccessException) { this.tbChosenMessage.Text = "Brak dostępu do pliku."; }
             catch (FileNotFoundException) { this.tbChosenMessage.Text = "Nie znaleziono pliku o takiej nazwie.";  }
             catch (NotSupportedException) { this.tbChosenMessage.Text = "Nie można odczytać pliku tego formatu."; }
+            catch (IOException) { this.tbChosenMessage.Text = "Plik jest używany przez inną aplikację."; }
+            catch (SecurityException) { this.tbChosenMessage.Text = "Plik jest nieosiągalny."; }
         }
         #endregion
         #region buttonEncryptFile_Click
         private void buttonEncryptFile_Click(object sender, RoutedEventArgs e)
         {
-            this.RSAencrypt.PersistKeyInCsp = false; //Zawarcie klucza w wiadomości.
+            this.RSAencrypt.PersistKeyInCsp = true; //Zawarcie klucza w wiadomości.
+
             try
             {
-                this.encryptedData = RSAencrypt.Encrypt(this.dataToEncrypt, this.windowsVersionLowerThen2000);// Szyfrowanie wiadomości.
+                this.encryptedData = this.RSAencrypt.Encrypt(this.dataToEncrypt, this.windowsVersionLowerThen2000);//Szyfrowanie wiadomości.
             }
             catch (CryptographicException) { this.tbEncryptMessage.Text = "Szyfrowanie wiadmości nie powidoło się. Upewnij się że zostały wygenerowane."; }
             catch (ArgumentNullException) { this.tbEncryptMessage.Text = "Musisz wybrać plik do odszyfrowania."; }
 
             try
             {
-                if (this.encryptedData.Length > 0)
+                if (this.decryptedData == null) this.tbEncryptMessage.Text = "Wiadomość jest za długa, zaszyfrować można tylko blok 128 bajtowy.";
+                else if (this.encryptedData.Length > 0)
                 {
                     File.WriteAllBytes(ENCRYPTED_MESSAGE_PATH, this.encryptedData);
                     this.tbEncryptMessage.Text = "Wiadomość została zapisana w pliku: " + ENCRYPTED_MESSAGE_PATH;
                 }
-                else this.tbEncryptMessage.Text = "Wiadomość jest za krótka.";
+                else if (this.encryptedData.Length == 0) this.tbEncryptMessage.Text = "Wiadomość jest za krótka.";
             }
             catch (ArgumentNullException) { this.tbEncryptMessage.Text = "Nie wybrano żadnego pliku."; }
             catch (PathTooLongException) { this.tbEncryptMessage.Text = "Ścieżka dostępu jest za długa."; }
@@ -199,18 +201,23 @@ namespace RSA
             catch (UnauthorizedAccessException) { this.tbEncryptedChosenMessage.Text = "Brak dostępu do pliku."; }
             catch (FileNotFoundException) { this.tbEncryptedChosenMessage.Text = "Nie znaleziono pliku o takiej nazwie."; }
             catch (NotSupportedException) { this.tbEncryptedChosenMessage.Text = "Nie można odczytać pliku tego formatu."; }
+            catch (IOException) { this.tbChosenMessage.Text = "Plik jest używany przez inną aplikację."; }
+            catch (SecurityException) { this.tbChosenMessage.Text = "Plik jest nieosiągalny."; }
         }
         #endregion
         #region buttonDecryptFile_Click
         private void buttonDecryptFile_Click(object sender, RoutedEventArgs e)
         {
+            CspParameters csp2 = new CspParameters();
+            csp2.KeyContainerName = KEY_NAME;
+
+            this.RSAdecrypt = new RSACryptoServiceProvider(csp2);
+            this.RSAdecrypt.PersistKeyInCsp = true;
+
             if (this.isKeyImported)
                this.RSAdecrypt.FromXmlString(this.importedKey);
 
-            //Czy klucz jest zawarty w treści wiadomości.
-            this.RSAdecrypt.PersistKeyInCsp = this.rbKeyInMassageEncryptYes.IsChecked == true ? true : false;
-
-            try
+           try 
             {
                 //Odszyfrowanie wcześniej zaimportowanej wiadomości.
                 this.decryptedData = this.RSAdecrypt.Decrypt(this.encryptedMessageFromFileInBytes, this.windowsVersionLowerThen2000);
@@ -218,7 +225,8 @@ namespace RSA
 
                 File.WriteAllText(DECRYPTED_MESSAGE_PATH, Encoding.UTF8.GetString(this.decryptedData));
             }
-            catch (CryptographicException) { this.tbDecryptMessage.Text = "Odszyfrowanie wiadmości nie powidoło się. Upewnij się że zostały wygenerowane klucze lub został zaimportowany prywatny klucz, oraz czy klucz był zapisany w wiadomości."; }
+            catch (CryptographicException) {this.tbDecryptMessage.Text = "Odszyfrowanie wiadmości nie powidoło się. Upewnij się że zostały wygenerowane klucze lub został zaimportowany prywatny klucz.";
+            }
             catch (ArgumentNullException) { this.tbDecryptMessage.Text = "Musisz wybrać plik do odszyfrowania."; }
         }
         #endregion
@@ -229,7 +237,7 @@ namespace RSA
             {   
                 //Zapisywanie tylko publicznego klucza do pliku - jeżeli false.
                 //Jeżeli true - to wysyła publiczny i prywatny.
-                File.WriteAllText(KEY_PATH, RSAencrypt.ToXmlString(this.rbPublicAndPrivateKey.IsChecked == true ? true : false), new UTF8Encoding());
+                File.WriteAllText(KEY_PATH, RSAencrypt.ToXmlString(this.cbPublicAndPrivateKeyExport.IsChecked == true ? true : false), new UTF8Encoding());
                 this.tbExportPrivateKey.Text = "Klucz został zapisany w " + KEY_PATH + ".";
             }
             catch (ArgumentNullException) { this.tbExportPrivateKey.Text = "Nie wybrano żadnego pliku."; }
@@ -246,7 +254,6 @@ namespace RSA
             try
             {
                 this.importedKey = File.ReadAllText(KEY_PATH);
-                this.RSAdecrypt.FromXmlString(this.importedKey);
                 this.tbImportKey.Text = "Klucz został zaimportowany.";
                 this.isKeyImported = true;
             }
@@ -256,6 +263,8 @@ namespace RSA
             catch (UnauthorizedAccessException) { this.tbImportKey.Text = "Brak dostępu do pliku."; }
             catch (FileNotFoundException) { this.tbImportKey.Text = "Nie znaleziono pliku o takiej nazwie."; }
             catch (NotSupportedException) { this.tbImportKey.Text = "Nie można odczytać pliku tego formatu."; }
+            catch (IOException) { this.tbChosenMessage.Text = "Plik jest używany przez inną aplikację."; }
+            catch (SecurityException) { this.tbChosenMessage.Text = "Plik jest nieosiągalny."; }
         }
         #endregion  
 

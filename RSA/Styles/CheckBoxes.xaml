@@ -3,10 +3,10 @@
                     xmlns:local="clr-namespace:RSA">
 
 
-    <Style x:Key="{x:Type RadioButton}" TargetType="{x:Type RadioButton}">
+    <Style x:Key="{x:Type CheckBox}" TargetType="{x:Type CheckBox}">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{StaticResource FontsBrash}"/>
         <Setter Property="Margin" Value="5"/>
     </Style>
-
+  
 </ResourceDictionary>

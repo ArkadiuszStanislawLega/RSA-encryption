@@ -57,66 +57,22 @@
         <Grid>
             <Border Margin="0" Background="{StaticResource MainBarBrash}" CornerRadius="0 0 60 60" />
             <Grid >
+                <!--#region Columndefinitions-->
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
+                <!--#endregion-->
                 <!--#region RadioButtons-->
-                <StackPanel Grid.Column="1">
-                    <TextBlock Text="Wybierz które klucze mają być eksportowane:"/>
-                    <RadioButton Name="rbPublicAndPrivateKey" 
-                                 Content="Klucz publiczny i prywatny" 
-                                 IsChecked="True"
-                                 GroupName="ExsportKey"
-                                 />
-                    <RadioButton Name="rbPublicKey" 
-                                 Content="Klucz publiczny"
-                                 GroupName="ExsportKey"/>
-                    <Separator/>
-                    <TextBlock Text="Którego klucza użyć do odszyfrowania wiadomości:"/>
-                    <RadioButton Name="rbPublicAndPrivateKeyEncrypt" 
-                                 Content="Klucz publiczny i prywatny" 
-                                 IsChecked="True"
-                                 GroupName="EncryptKey"/>
-                    <RadioButton Name="rbPublicKeyEncrpyt" 
-                                 Content="Klucz publiczny"
-                                 GroupName="EncryptKey"/>
-                    <Separator/>
-                    <TextBlock Text="Którego klucza użyć do odszyfrowania wiadomości:"/>
-                    <RadioButton Name="rbPublicAndPrivateKeyDecrypt" 
-                                 Content="Klucz publiczny i prywatny" 
-                                 IsChecked="True"
-                                 GroupName="DecryptKey"/>
-                    <RadioButton Name="rbPublicKeyDecrypt" 
-                                 Content="Klucz publiczny"
-                                 GroupName="DecryptKey"/>
-                    <Separator/>
-                    <StackPanel>
-                        <TextBlock Text="Czy klucz ma zostać zaszyfrowany w wiadomości:"/>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <RadioButton Name="rbKeyInMassageEncryptYes" 
-                                         Content="Tak" 
-                                         IsChecked="True"
-                                         GroupName="KeyInMessageEncrypt"/>
-                            <RadioButton Name="rbKeyInMassageEncryptNo" 
-                                         Content="Nie"
-                                         GroupName="KeyInMessageEncrypt"/>
-                        </StackPanel>
-                    </StackPanel>
-                    <Separator/>
-                    <StackPanel Orientation="Vertical">
-                        <TextBlock Text="Czy został zaszyforwany w wiadomości:"/>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <RadioButton Name="rbKeyInMassageDecryptYes" 
-                                         Content="Tak" 
-                                         IsChecked="True"
-                                         GroupName="KeyInMessageDecrypt"/>
-                            <RadioButton Name="rbKeyInMassageDecryptNo" 
-                                         Content="Nie"
-                                         GroupName="KeyInMessageDecrypt"/>
-                        </StackPanel>
-                    </StackPanel>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Width="270">
+                    <TextBlock Text="Eksport kluczy" 
+                               TextAlignment="Center" 
+                               Foreground="{StaticResource EnabledBrash}"/>
+                    <CheckBox Name="cbPublicAndPrivateKeyExport" Background="{StaticResource FontsBrash}">
+                        <TextBlock Text="Mają być eksportowane do pliku klucze, prywatny i publiczny. Jeżeli nie zostanie zazaczone to pole to zostanie wysłany tylko klucz publiczny." 
+                                   TextWrapping="Wrap"/>
+                    </CheckBox>
                 </StackPanel>
                 <!--#endregion-->
                 <!--#region Messages-->
