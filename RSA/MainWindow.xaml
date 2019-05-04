@@ -112,6 +112,7 @@
                         <TextBlock Name="tbEncryptMessage" 
                                    TextAlignment="Center" 
                                    VerticalAlignment="Center"
+                                    TextWrapping="Wrap"
                                    Margin="10"/>
                         <Separator/>
                         <ScrollViewer HorizontalScrollBarVisibility="Auto"
