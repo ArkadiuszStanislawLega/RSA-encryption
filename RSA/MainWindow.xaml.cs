@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace RSA
 {
@@ -16,18 +17,19 @@ namespace RSA
     public partial class MainWindow : Window
     {
         #region Properties
-        const string KEY_NAME = "Key01";
+        private string KEY_NAME_1 = "Key0";
+        private const string KEY_NAME_2 = "Key02";
 
         #region EXCETPION_MESSAGES
-        const string EXCEPTION_MESSAGE_UNAUTORIZED_ACCESS = "Do poprawnego działania aplikacji, należy przenieść plik wykonywalny przenieść w miejsce które nie wymaga autoryzacji administratora.";
-        const string EXCETPION_MESSAGE_NOT_SUPPORTED = "Nie można zapisać pliku w tym formacie.";
-        const string EXCEPTION_MESSAGE_ARGUMENT_NULL = "Nie wybrano żadnego pliku.";
-        const string EXCEPTION_MESSAGE_PATH_TOO_LONG = "Ścieżka dostępu jest za długa.";
-        const string EXCEPTION_MESSAGE_DIRECTORY_NOT_FOUND = "Nie znaleziono pliku pod tą ścieżką dostępu.";
-        const string EXCEPTION_MESSAGE_SECURITY = "Nie można zapisać pliku ze względów bezpieczeństwa.";
-        const string EXCEPTION_MESSAGE_FILE_NOT_FOUND = "Nie znaleziono pliku.";
-        const string EXCEPTION_MESSAGE_IO = "Błąd. Plik jest prawdopodnie używany przez inną aplikację.";
-        const string EXCEPTION_MESSAGE_ARGUMENT = "Nie wybrano żadnego pliku.";
+        private const string EXCEPTION_MESSAGE_UNAUTORIZED_ACCESS = "Do poprawnego działania aplikacji, należy przenieść plik wykonywalny, w miejsce które nie wymaga autoryzacji administratora.";
+        private const string EXCETPION_MESSAGE_NOT_SUPPORTED = "Nie można zapisać pliku w tym formacie.";
+        private const string EXCEPTION_MESSAGE_ARGUMENT_NULL = "Nie wybrano żadnego pliku.";
+        private const string EXCEPTION_MESSAGE_PATH_TOO_LONG = "Ścieżka dostępu jest za długa.";
+        private const string EXCEPTION_MESSAGE_DIRECTORY_NOT_FOUND = "Nie znaleziono pliku pod tą ścieżką dostępu.";
+        private const string EXCEPTION_MESSAGE_SECURITY = "Nie można zapisać pliku ze względów bezpieczeństwa.";
+        private const string EXCEPTION_MESSAGE_FILE_NOT_FOUND = "Nie znaleziono pliku.";
+        private const string EXCEPTION_MESSAGE_IO = "Błąd. Plik jest prawdopodnie używany przez inną aplikację.";
+        private const string EXCEPTION_MESSAGE_ARGUMENT = "Nie wybrano żadnego pliku.";
         #endregion
 
         /// <summary>
@@ -87,29 +89,38 @@ namespace RSA
         private string importedKey;
 
         /// <summary>
-        /// Flaga wskazująca czy zostały zaimportowane z pliku klucze.
+        /// Flaga wskazująca czy klucz był już importowany.
         /// </summary>
-        private bool isKeyImported = false;
+        private bool keyWasImported = false;
         /// <summary>
         /// Flaga wskazująca czy wersja windowsa jest niższ niż Windows 2000.
         /// </summary>
         private bool windowsVersionLowerThen2000;
         #endregion
-
+        public bool KeyWasImported { get => this.keyWasImported; set => this.keyWasImported = value; }
+        public int LastValue = 0;
         #region Basic Constructor
         public MainWindow()
         {
             InitializeComponent();
 
+            this.LastValue = int.Parse(File.ReadAllText(Directory.GetCurrentDirectory() + @"\ostatniaWartosc.txt"));
+            this.LastValue++;
+            this.KEY_NAME_1 += LastValue;
+            File.WriteAllText(Directory.GetCurrentDirectory() + @"\ostatniaWartosc.txt", "" + LastValue);
+
+            this.DataContext = this;
+
             //Sprawdzam wersję windowsa, jest to potrzebne do szyfrowania w bibliotece z której korzystam.
             this.windowsVersionLowerThen2000 = IsXpOrHigher();
 
             this.cspp = new CspParameters();
-            this.cspp.KeyContainerName = KEY_NAME;
+            this.cspp.KeyContainerName = KEY_NAME_1;
             try
             {
                 this.decryptedMessagePath = Directory.GetCurrentDirectory() + @"\odszyfrowana wiadomosc.txt";
                 this.keysPath = Directory.GetCurrentDirectory() + @"\klucze.txt";
+                this.encryptedMessagePath = Directory.GetCurrentDirectory() + @"\zaszyfrowana wiadomosc.txt";
             }
             catch (UnauthorizedAccessException)
             {
@@ -184,7 +195,8 @@ namespace RSA
             try
             {
                 this.RSAencrypt = new RSACryptoServiceProvider(cspp);
-                this.tbCreateAsmKey.Text = "Twój klucz to: " + this.RSAencrypt.ToXmlString(false);
+                whatKeyShouldBeShown();
+                this.cbPublicAndPrivateKeyExport.IsEnabled = true;
             }
             catch (CryptographicException) { this.tbCreateAsmKey.Text = "Wystąpił błąd przy tworzeniu kluczy."; };
         }
@@ -208,8 +220,8 @@ namespace RSA
 
                 if (openFileDialog.ShowDialog() == true) this.messageToEncryptPath = openFileDialog.FileName;
 
-                this.dataToEncrypt = File.ReadAllBytes(messageToEncryptPath);
-                this.tbChosenMessage.Text = File.ReadAllText(messageToEncryptPath);
+                this.dataToEncrypt = File.ReadAllBytes(this.messageToEncryptPath);
+                this.tbChosenMessage.Text = File.ReadAllText(this.messageToEncryptPath);
             }
             catch (ArgumentNullException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_ARGUMENT_NULL; }
             catch (PathTooLongException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_PATH_TOO_LONG; }
@@ -243,17 +255,20 @@ namespace RSA
                 if (this.encryptedData == null) this.tbEncryptMessage.Text = "Wiadomość jest za długa, zaszyfrować można tylko blok 128 bajtowy. Ten plik jest: " + this.dataToEncrypt.Length + " bajtowy.";
                 else if (this.encryptedData.Length > 0)
                 {
-                    File.WriteAllBytes(encryptedMessagePath, this.encryptedData);
+                    File.WriteAllBytes(this.encryptedMessagePath, this.encryptedData);
                     this.tbEncryptMessage.Text = "Wiadomość została zapisana w pliku: " + this.encryptedMessagePath;
                 }
                 else if (this.encryptedData.Length == 0) this.tbEncryptMessage.Text = "Wiadomość jest za krótka.";
             }
-            catch (ArgumentNullException) { this.tbEncryptMessage.Text = EXCEPTION_MESSAGE_ARGUMENT_NULL; }
-            catch (PathTooLongException) { this.tbEncryptMessage.Text = EXCEPTION_MESSAGE_PATH_TOO_LONG; }
-            catch (DirectoryNotFoundException) { this.tbEncryptMessage.Text = EXCEPTION_MESSAGE_DIRECTORY_NOT_FOUND; }
-            catch (UnauthorizedAccessException) { this.tbEncryptMessage.Text = EXCEPTION_MESSAGE_UNAUTORIZED_ACCESS; }
-            catch (NotSupportedException) { this.tbEncryptMessage.Text = EXCETPION_MESSAGE_NOT_SUPPORTED; }
-            catch (SecurityException) { this.tbEncryptMessage.Text = EXCEPTION_MESSAGE_SECURITY;  }
+            catch (ArgumentNullException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_ARGUMENT_NULL; }
+            catch (PathTooLongException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_PATH_TOO_LONG; }
+            catch (DirectoryNotFoundException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_DIRECTORY_NOT_FOUND; }
+            catch (UnauthorizedAccessException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_UNAUTORIZED_ACCESS; }
+            catch (FileNotFoundException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_FILE_NOT_FOUND; }
+            catch (NotSupportedException) { this.tbChosenMessage.Text = EXCETPION_MESSAGE_NOT_SUPPORTED; }
+            catch (IOException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_IO; }
+            catch (SecurityException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_SECURITY; }
+            catch (ArgumentException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_ARGUMENT; }
         }
         #endregion
         #region buttonChoseDecryptFile_Click
@@ -275,8 +290,8 @@ namespace RSA
 
                 if (openFileDialog.ShowDialog() == true) this.encryptedMessagePath = openFileDialog.FileName;
 
-                this.encryptedMessageFromFileInBytes = File.ReadAllBytes(encryptedMessagePath);
-                this.encryptedMessageFromFile = File.ReadAllText(encryptedMessagePath); //Odczytanie zaszyfrowanej wiadomości w UTF8
+                this.encryptedMessageFromFileInBytes = File.ReadAllBytes(this.encryptedMessagePath);
+                this.encryptedMessageFromFile = File.ReadAllText(this.encryptedMessagePath); //Odczytanie zaszyfrowanej wiadomości w UTF8
                 this.tbEncryptedChosenMessage.Text = encryptedMessageFromFile;
             }
             catch (ArgumentNullException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_ARGUMENT_NULL; }
@@ -300,15 +315,26 @@ namespace RSA
         /// <param name="e"></param>
         private void buttonDecryptFile_Click(object sender, RoutedEventArgs e)
         {
-            CspParameters csp2 = new CspParameters();
-            csp2.KeyContainerName = KEY_NAME;
+            CspParameters cspp2 = new CspParameters();
+            cspp2.KeyContainerName = KEY_NAME_2;
 
-            this.RSAdecrypt = new RSACryptoServiceProvider(csp2);
+            this.RSAdecrypt = new RSACryptoServiceProvider();
             this.RSAdecrypt.PersistKeyInCsp = true;
-
-            if (this.isKeyImported)
-               this.RSAdecrypt.FromXmlString(this.importedKey);
-
+            
+            if (this.keyWasImported)
+            {
+                this.RSAdecrypt = new RSACryptoServiceProvider(cspp2);
+                this.RSAdecrypt.PersistKeyInCsp = true;
+                this.RSAdecrypt.FromXmlString(this.importedKey);
+            }
+            else
+            {
+                this.RSAdecrypt = new RSACryptoServiceProvider(cspp);
+                this.RSAdecrypt.ImportParameters(this.RSAencrypt.ExportParameters(true));
+                this.RSAdecrypt.PersistKeyInCsp = true;
+            }
+               
+          
            try 
             {
                 //Odszyfrowanie wcześniej zaimportowanej wiadomości.
@@ -369,7 +395,15 @@ namespace RSA
             {
                 this.importedKey = File.ReadAllText(keysPath);
                 this.tbImportKey.Text = "Klucz został zaimportowany.";
-                this.isKeyImported = true;
+                this.keyWasImported = true;
+                this.cbImoprtedOrCurrentKeyShow.IsEnabled = this.keyWasImported;
+                if (this.RSAdecrypt != null)
+                    this.RSAdecrypt.FromXmlString(this.importedKey);
+                else
+                {
+                    this.RSAdecrypt = new RSACryptoServiceProvider(this.cspp);
+                    this.RSAdecrypt.FromXmlString(this.importedKey);
+                }
             }
             catch (ArgumentNullException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_ARGUMENT_NULL; }
             catch (PathTooLongException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_PATH_TOO_LONG; }
@@ -381,7 +415,49 @@ namespace RSA
             catch (SecurityException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_SECURITY; }
             catch (ArgumentException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_ARGUMENT; }
         }
-        #endregion  
-    }
+        #endregion
+
+        private void aboutButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Apliakacja wyprodukowana na potrzeby projektu z przedmiotu \"Bezpieczeństwo w systemach i sieciach komputerowych\"\n\nAutor: Arkadiusz Łęga\nemail:horemheb@vp.pl","Informacja");
+        }
+
+        private void PrivateKeyShowCheckBox_Checked(object sender, RoutedEventArgs e) => whatKeyShouldBeShown();
+        private void PrivateKeyShowCheckBox_Unchecked(object sender, RoutedEventArgs e) => whatKeyShouldBeShown();
+
+        #region whatKeyShouldBeShown
+        /// <summary>
+        /// Sprawdza które kontrolki sa zanznaczone w celu wyświetlenia kluczy.
+        /// Wyświetla zawartość tbCreateAsmKey.
+        /// </summary>
+        private void whatKeyShouldBeShown()
+        {
+            if (this.keyWasImported)
+            {
+                if (this.keyWasImported == true && this.cbPublicAndPrivateCurrentKeyShow.IsChecked == true)
+                    this.tbCreateAsmKey.Text = this.RSAdecrypt != null ? this.RSAdecrypt.ToXmlString(true) : "1";
+
+                else if (this.keyWasImported == true && this.cbPublicAndPrivateCurrentKeyShow.IsChecked == false)
+                    this.tbCreateAsmKey.Text = this.RSAdecrypt != null ? this.RSAdecrypt.ToXmlString(false) : "2";
+
+                else if (this.keyWasImported == false && this.cbPublicAndPrivateCurrentKeyShow.IsChecked == true)
+                    this.tbCreateAsmKey.Text = this.RSAencrypt != null ? this.tbCreateAsmKey.Text = this.RSAencrypt.ToXmlString(true) : "3";
+
+                else if (this.keyWasImported == false && this.cbPublicAndPrivateCurrentKeyShow.IsChecked == false)
+                    this.tbCreateAsmKey.Text = this.RSAencrypt != null ? this.tbCreateAsmKey.Text = this.RSAencrypt.ToXmlString(false) : "4";
+            }
+            else
+            {
+                if (this.cbPublicAndPrivateCurrentKeyShow.IsChecked == true)
+                    this.tbCreateAsmKey.Text = this.RSAencrypt != null ? this.tbCreateAsmKey.Text = this.RSAencrypt.ToXmlString(true) : "5";
+
+                else
+                    this.tbCreateAsmKey.Text = this.RSAencrypt != null ? this.tbCreateAsmKey.Text = this.RSAencrypt.ToXmlString(false) : "6";
+            }
+        }
+        #endregion
+
+       
+     }
 }
 

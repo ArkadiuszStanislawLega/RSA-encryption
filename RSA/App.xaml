@@ -12,6 +12,7 @@
                 <ResourceDictionary Source="/Styles/ScrollViewer.xaml"/>
                 <ResourceDictionary Source="/Styles/RadioButtons.xaml"/>
                 <ResourceDictionary Source="/Styles/CheckBoxes.xaml"/>
+                <ResourceDictionary Source="/Styles/ToolTip.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

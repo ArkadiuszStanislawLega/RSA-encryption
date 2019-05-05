@@ -1,6 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="clr-namespace:RSA.Styles"
+                    xmlns:local="clr-namespace:RSA"
                     xmlns:fa="http://schemas.fontawesome.io/icons/" >
 
     <!--#region BasicButton-->
@@ -14,6 +14,7 @@
         <Setter Property="Margin" Value="2"/>
         <Setter Property="Template">
             <Setter.Value>
+                
                 <ControlTemplate TargetType="Button">
                     <Border Width="{TemplateBinding Width}"
                             Height="{TemplateBinding Height}"
@@ -34,6 +35,10 @@
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="False">
                             <Setter Property="Background" Value="{StaticResource MainBarBrash}"/>
+                            <Setter Property="FontSize" Value="12"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Background" Value="{StaticResource GrayBrash}"/>
                             <Setter Property="FontSize" Value="12"/>
                         </Trigger>
                     </ControlTemplate.Triggers>

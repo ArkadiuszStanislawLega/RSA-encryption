@@ -1,0 +1,42 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:RSA"
+                     xmlns:fa="http://schemas.fontawesome.io/icons/">
+
+    <Style x:Key="{x:Type ToolTip}" TargetType="ToolTip">
+        <Setter Property="OverridesDefaultStyle" Value="true" />
+        <Setter Property="HasDropShadow" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <Border Name="Border"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Width="{TemplateBinding Width}"
+                            Height="{TemplateBinding Height}"
+                            Background="{StaticResource GrayBrash}">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:ImageAwesome Icon="InfoCircle" 
+                                             Width="15"
+                                             Height="15"
+                                             Margin="5 0 5 0"
+                                             VerticalAlignment="Center" 
+                                             HorizontalAlignment="Center" 
+                                             Foreground="{StaticResource FontsBrash}" />
+                            <ContentPresenter Margin="4"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top" />
+                        </StackPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HasDropShadow" Value="true">
+                            <Setter TargetName="Border" Property="CornerRadius" Value="4" />
+                            <Setter TargetName="Border" Property="SnapsToDevicePixels" Value="true" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

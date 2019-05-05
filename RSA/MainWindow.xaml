@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:local="clr-namespace:RSA"
         AllowsTransparency="True"
         WindowStartupLocation="CenterScreen"
@@ -65,15 +66,75 @@
                 </Grid.ColumnDefinitions>
                 <!--#endregion-->
                 <!--#region RadioButtons-->
-                <StackPanel Grid.Column="1" VerticalAlignment="Center" Width="270">
-                    <TextBlock Text="Eksport kluczy" 
-                               TextAlignment="Center" 
-                               Foreground="{StaticResource EnabledBrash}"/>
-                    <CheckBox Name="cbPublicAndPrivateKeyExport" Background="{StaticResource FontsBrash}">
-                        <TextBlock Text="Mają być eksportowane do pliku klucze, prywatny i publiczny. Jeżeli nie zostanie zazaczone to pole to zostanie wysłany tylko klucz publiczny." 
-                                   TextWrapping="Wrap"/>
-                    </CheckBox>
-                </StackPanel>
+                <Grid Grid.Column="1" VerticalAlignment="Center" Width="270" Height="300">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <!--Information about-->
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Text="Klucze" 
+                                   TextAlignment="Center" 
+                                   Foreground="{StaticResource EnabledBrash}"
+                                   />
+                        <!--#region 1 checbox-->
+                        <Grid >
+                            <CheckBox Name="cbImoprtedOrCurrentKeyShow" 
+                                      Checked="PrivateKeyShowCheckBox_Checked"
+                                      Unchecked="PrivateKeyShowCheckBox_Unchecked"
+                                      IsEnabled="{Binding KeyWasImported}"
+                                      >
+                                <TextBlock Text="Pokaż klucz zaimportowany." 
+                                           TextWrapping="Wrap"
+                                           />
+                            </CheckBox>
+                            <fa:ImageAwesome Icon="InfoCircle" 
+                                             Height="16"
+                                             VerticalAlignment="Center" 
+                                             HorizontalAlignment="Right" 
+                                             Margin="0 0 30 0"
+                                             Foreground="{StaticResource FontsBrash}"
+                                             ToolTip="Warunkiem zaznaczenia tej kontrolki jest zaimportowanie klucza."/>
+                        </Grid>
+                        <!--#endregion-->
+                        <CheckBox Name="cbPublicAndPrivateCurrentKeyShow" 
+                                  Background="{StaticResource FontsBrash}"
+                                  Checked="PrivateKeyShowCheckBox_Checked"
+                                  Unchecked="PrivateKeyShowCheckBox_Unchecked"
+                                  ToolTip="Jeżeli nie ten punkt nie jest zaznaczony to jest wyświetlany tylko publiczny klucz."
+                                  >
+                            <TextBlock Text="Pokaż klucz prywatny i publiczny." 
+                                           TextWrapping="Wrap"/>
+                        </CheckBox>
+                        
+                        <Separator/>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Row="1">
+                        <TextBlock Text="Eksport kluczy" 
+                                   TextAlignment="Center" 
+                                   Foreground="{StaticResource EnabledBrash}"
+                                   />
+                        <CheckBox Name="cbPublicAndPrivateKeyExport" Background="{StaticResource FontsBrash}" 
+                                      Grid.Row="1"
+                                      IsEnabled="False">
+                            <TextBlock Text="Mają być eksportowane do pliku klucze, prywatny i publiczny." 
+                                           TextWrapping="Wrap"
+                                           ToolTip="Jeżeli nie zostanie zazaczone to pole to zostanie wysłany tylko klucz publiczny."/>
+                        </CheckBox>
+                    </StackPanel>
+                    <Button Click="aboutButton_Click" 
+                            Width="40" 
+                            Height="40" Grid.Row="2"  
+                            VerticalAlignment="Bottom" >
+                        <fa:ImageAwesome Icon="Bug" 
+                                         VerticalAlignment="Bottom" 
+                                         HorizontalAlignment="Center" 
+                                         Foreground="{StaticResource FontsBrash}" />
+                    </Button>
+                </Grid>
+                
                 <!--#endregion-->
                 <!--#region Messages-->
                 <Border BorderThickness="3"   Grid.Column="0"
@@ -106,7 +167,8 @@
                                    TextWrapping="Wrap"
                                    VerticalAlignment="Center"
                                    Margin="0 0 0 2" 
-                                   ScrollViewer.CanContentScroll="True"/>
+                                   ScrollViewer.CanContentScroll="True"
+                                       />
                         </ScrollViewer>
                         <Separator/>
                         <TextBlock Name="tbEncryptMessage" 
@@ -179,6 +241,7 @@
                         <Button Content="Eksport klucza publicznego" 
                                 Name="buttonExportPublickKey" 
                                 Click="buttonExportPublicKey_Click"
+                                IsEnabled="{Binding ElementName=cbPublicAndPrivateKeyExport, Path=IsEnabled}"
                                 />
 
                         <Button Content="Import zapisanego klucza" 

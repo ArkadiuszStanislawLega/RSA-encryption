@@ -10,7 +10,7 @@ using System.Windows;
 [assembly: AssemblyTitle("RSA")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Arkadiusz Łęga")]
 [assembly: AssemblyProduct("RSA")]
 [assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
