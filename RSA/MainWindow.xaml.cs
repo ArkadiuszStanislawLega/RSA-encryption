@@ -17,9 +17,24 @@ namespace RSA
     public partial class MainWindow : Window
     {
         #region Properties
-        private string KEY_NAME_1 = "Key0";
-        private const string KEY_NAME_2 = "Key02";
-
+        #region FILES_NAMES
+        /// <summary>
+        /// Nazwa pliku w którym jest trzymana odszyfrowana wiadomość.
+        /// </summary>
+        private const string DECRYPTED_MESSAGE_FILE_NAME = @"\odszyfrowana wiadomosc.txt";
+        /// <summary>
+        /// Nazwa pliku w którym jest trzymana zaszyfrowana wiadomość.
+        /// </summary>
+        private const string ENCRYPYTED_MESSAGE_FILE_NAME = @"\zaszyfrowana wiadomosc.txt";
+        /// <summary>
+        /// Nazwa pliku w którym są trzymane klucze.
+        /// </summary>
+        private const string KEYS_FILE_NAME = @"\klucze.txt";
+        /// <summary>
+        /// Nazwa pliku w którym jest trzymana liczba porządkowa ostatnio wyttworzenej pary kluczy.
+        /// </summary>
+        private const string LAST_KEY_FILE_NAME = @"\ostatni numer nazwy klucza.txt";
+        #endregion  
         #region EXCETPION_MESSAGES
         private const string EXCEPTION_MESSAGE_UNAUTORIZED_ACCESS = "Do poprawnego działania aplikacji, należy przenieść plik wykonywalny, w miejsce które nie wymaga autoryzacji administratora.";
         private const string EXCETPION_MESSAGE_NOT_SUPPORTED = "Nie można zapisać pliku w tym formacie.";
@@ -64,6 +79,14 @@ namespace RSA
         private byte[] encryptedMessageFromFileInBytes;
 
         /// <summary>
+        /// Nazwa klucza do szyfrowania.
+        /// </summary>
+        private string keyNameEncrypt = "Key";
+        /// <summary>
+        /// Nazwa klucza do deszyfrowania.
+        /// </summary>
+        private string keyNameDecrypt = "Key";
+        /// <summary>
         /// Ścieżka dostępu do pliku z wiadomością zaszyfrowaną która będzie deszyfrowana.
         /// </summary>
         private string decryptedMessagePath = "";
@@ -96,37 +119,67 @@ namespace RSA
         /// Flaga wskazująca czy wersja windowsa jest niższ niż Windows 2000.
         /// </summary>
         private bool windowsVersionLowerThen2000;
+
+        /// <summary>
+        /// Numer liczby porządkowej wytworzeonej pary kluczy.
+        /// </summary>
+        private int lastValue = 0;
         #endregion
         public bool KeyWasImported { get => this.keyWasImported; set => this.keyWasImported = value; }
-        public int LastValue = 0;
+
         #region Basic Constructor
         public MainWindow()
         {
             InitializeComponent();
 
-            this.LastValue = int.Parse(File.ReadAllText(Directory.GetCurrentDirectory() + @"\ostatniaWartosc.txt"));
-            this.LastValue++;
-            this.KEY_NAME_1 += LastValue;
-            File.WriteAllText(Directory.GetCurrentDirectory() + @"\ostatniaWartosc.txt", "" + LastValue);
-
             this.DataContext = this;
+
+            ReadOrCreateLastValueFile();
 
             //Sprawdzam wersję windowsa, jest to potrzebne do szyfrowania w bibliotece z której korzystam.
             this.windowsVersionLowerThen2000 = IsXpOrHigher();
 
             this.cspp = new CspParameters();
-            this.cspp.KeyContainerName = KEY_NAME_1;
+            this.cspp.KeyContainerName = keyNameEncrypt;
             try
             {
-                this.decryptedMessagePath = Directory.GetCurrentDirectory() + @"\odszyfrowana wiadomosc.txt";
-                this.keysPath = Directory.GetCurrentDirectory() + @"\klucze.txt";
-                this.encryptedMessagePath = Directory.GetCurrentDirectory() + @"\zaszyfrowana wiadomosc.txt";
+                this.encryptedMessagePath = Directory.GetCurrentDirectory() + ENCRYPYTED_MESSAGE_FILE_NAME;
+                this.decryptedMessagePath = Directory.GetCurrentDirectory() + DECRYPTED_MESSAGE_FILE_NAME;
+                this.keysPath = Directory.GetCurrentDirectory() + KEYS_FILE_NAME;
             }
             catch (UnauthorizedAccessException)
             {
-                MessageBox.Show("Do poprawnego działania aplikacji, należy przenieść plik wykonywalny przenieść w miejsce które nie wymaga autoryzacji administratora.");
+                MessageBox.Show("Do poprawnego działania aplikacji należy przenieść plik wykonywalny w miejsce które nie wymaga autoryzacji administratora.");
             }
             catch (NotSupportedException) { }
+        }
+        #endregion
+
+        #region ReadOrCreateLastValueFile
+        /// <summary>
+        /// Pobiera ostatnią wartość liczby porządkowej przydzielanej kluczom.
+        /// Bez zmiany nazwy kluczy nie zostanie wygenerowany następny klucz.
+        /// Będą ciągle takie same.
+        /// </summary>
+        private void ReadOrCreateLastValueFile()
+        {
+            try
+            {
+                if (!File.Exists(Directory.GetCurrentDirectory() + LAST_KEY_FILE_NAME)) this.lastValue++;
+                else if (int.TryParse(File.ReadAllText(Directory.GetCurrentDirectory() + LAST_KEY_FILE_NAME), out lastValue)) this.lastValue++;
+              
+                this.keyNameEncrypt += lastValue;
+                File.WriteAllText(Directory.GetCurrentDirectory() + LAST_KEY_FILE_NAME, "" + lastValue);
+            }
+            catch (ArgumentNullException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_ARGUMENT_NULL; }
+            catch (PathTooLongException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_PATH_TOO_LONG; }
+            catch (DirectoryNotFoundException){ this.tbChosenMessage.Text = EXCEPTION_MESSAGE_DIRECTORY_NOT_FOUND;}
+            catch (UnauthorizedAccessException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_UNAUTORIZED_ACCESS; }
+            catch (FileNotFoundException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_FILE_NOT_FOUND; }
+            catch (NotSupportedException) { this.tbChosenMessage.Text = EXCETPION_MESSAGE_NOT_SUPPORTED; }
+            catch (IOException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_IO; }
+            catch (SecurityException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_SECURITY; }
+            catch (ArgumentException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_ARGUMENT; }
         }
         #endregion
 
@@ -194,6 +247,11 @@ namespace RSA
         {
             try
             {
+                ReadOrCreateLastValueFile();
+
+                this.cspp = new CspParameters();
+                this.cspp.KeyContainerName = keyNameEncrypt;
+
                 this.RSAencrypt = new RSACryptoServiceProvider(cspp);
                 whatKeyShouldBeShown();
                 this.cbPublicAndPrivateKeyExport.IsEnabled = true;
@@ -222,6 +280,7 @@ namespace RSA
 
                 this.dataToEncrypt = File.ReadAllBytes(this.messageToEncryptPath);
                 this.tbChosenMessage.Text = File.ReadAllText(this.messageToEncryptPath);
+                this.buttonEncryptFile.IsEnabled = true;
             }
             catch (ArgumentNullException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_ARGUMENT_NULL; }
             catch (PathTooLongException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_PATH_TOO_LONG; }
@@ -293,6 +352,8 @@ namespace RSA
                 this.encryptedMessageFromFileInBytes = File.ReadAllBytes(this.encryptedMessagePath);
                 this.encryptedMessageFromFile = File.ReadAllText(this.encryptedMessagePath); //Odczytanie zaszyfrowanej wiadomości w UTF8
                 this.tbEncryptedChosenMessage.Text = encryptedMessageFromFile;
+
+                this.buttonDecryptFile.IsEnabled = true;
             }
             catch (ArgumentNullException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_ARGUMENT_NULL; }
             catch (PathTooLongException) { this.tbChosenMessage.Text = EXCEPTION_MESSAGE_PATH_TOO_LONG; }
@@ -316,10 +377,8 @@ namespace RSA
         private void buttonDecryptFile_Click(object sender, RoutedEventArgs e)
         {
             CspParameters cspp2 = new CspParameters();
-            cspp2.KeyContainerName = KEY_NAME_2;
-
-            this.RSAdecrypt = new RSACryptoServiceProvider();
-            this.RSAdecrypt.PersistKeyInCsp = true;
+            this.keyNameDecrypt += ++lastValue;
+            cspp2.KeyContainerName = keyNameDecrypt;
             
             if (this.keyWasImported)
             {
@@ -396,7 +455,9 @@ namespace RSA
                 this.importedKey = File.ReadAllText(keysPath);
                 this.tbImportKey.Text = "Klucz został zaimportowany.";
                 this.keyWasImported = true;
+
                 this.cbImoprtedOrCurrentKeyShow.IsEnabled = this.keyWasImported;
+
                 if (this.RSAdecrypt != null)
                     this.RSAdecrypt.FromXmlString(this.importedKey);
                 else
@@ -419,7 +480,7 @@ namespace RSA
 
         private void aboutButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Apliakacja wyprodukowana na potrzeby projektu z przedmiotu \"Bezpieczeństwo w systemach i sieciach komputerowych\"\n\nAutor: Arkadiusz Łęga\nemail:horemheb@vp.pl","Informacja");
+            MessageBox.Show("Apliakacja napisana na potrzeby projektu z przedmiotu \"Bezpieczeństwo w systemach i sieciach komputerowych\".\n\nPliki utworzone w czesie działania aplikacji znajdują się w katalogu:\n" + Directory.GetCurrentDirectory() + "\n\nAutor: Arkadiusz Łęga\nemail:horemheb@vp.pl","Informacje dotyczące aplikacji");
         }
 
         private void PrivateKeyShowCheckBox_Checked(object sender, RoutedEventArgs e) => whatKeyShouldBeShown();
@@ -432,28 +493,29 @@ namespace RSA
         /// </summary>
         private void whatKeyShouldBeShown()
         {
-            if (this.keyWasImported)
-            {
-                if (this.keyWasImported == true && this.cbPublicAndPrivateCurrentKeyShow.IsChecked == true)
-                    this.tbCreateAsmKey.Text = this.RSAdecrypt != null ? this.RSAdecrypt.ToXmlString(true) : "1";
-
-                else if (this.keyWasImported == true && this.cbPublicAndPrivateCurrentKeyShow.IsChecked == false)
-                    this.tbCreateAsmKey.Text = this.RSAdecrypt != null ? this.RSAdecrypt.ToXmlString(false) : "2";
-
-                else if (this.keyWasImported == false && this.cbPublicAndPrivateCurrentKeyShow.IsChecked == true)
-                    this.tbCreateAsmKey.Text = this.RSAencrypt != null ? this.tbCreateAsmKey.Text = this.RSAencrypt.ToXmlString(true) : "3";
-
-                else if (this.keyWasImported == false && this.cbPublicAndPrivateCurrentKeyShow.IsChecked == false)
-                    this.tbCreateAsmKey.Text = this.RSAencrypt != null ? this.tbCreateAsmKey.Text = this.RSAencrypt.ToXmlString(false) : "4";
-            }
-            else
-            {
-                if (this.cbPublicAndPrivateCurrentKeyShow.IsChecked == true)
-                    this.tbCreateAsmKey.Text = this.RSAencrypt != null ? this.tbCreateAsmKey.Text = this.RSAencrypt.ToXmlString(true) : "5";
-
+            try
+            { 
+                if (this.cbImoprtedOrCurrentKeyShow.IsChecked == true)
+                {
+                    if (this.RSAdecrypt != null)
+                    {
+                        if (this.cbPublicAndPrivateCurrentKeyShow.IsChecked == true) this.tbCreateAsmKey.Text = this.RSAdecrypt.ToXmlString(true);
+                        else this.tbCreateAsmKey.Text = this.RSAdecrypt.ToXmlString(false);
+                    }
+                    else this.tbCreateAsmKey.Text = "";     
+                }
                 else
-                    this.tbCreateAsmKey.Text = this.RSAencrypt != null ? this.tbCreateAsmKey.Text = this.RSAencrypt.ToXmlString(false) : "6";
+                {
+                    if (this.RSAencrypt != null)
+                    {
+                        if (this.cbPublicAndPrivateCurrentKeyShow.IsChecked == true) this.tbCreateAsmKey.Text = this.RSAencrypt.ToXmlString(true);
+                        else this.tbCreateAsmKey.Text = this.RSAencrypt.ToXmlString(false);
+                    }
+                    else this.tbCreateAsmKey.Text = "";
+                }
             }
+            catch (CryptographicException) { this.tbCreateAsmKey.Text = "Eksportowny był tylko klucz publiczny."; }
+
         }
         #endregion
 

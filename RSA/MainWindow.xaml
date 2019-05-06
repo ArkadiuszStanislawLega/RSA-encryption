@@ -93,7 +93,7 @@
                                              Height="16"
                                              VerticalAlignment="Center" 
                                              HorizontalAlignment="Right" 
-                                             Margin="0 0 30 0"
+                                             Margin="0 0 15 0"
                                              Foreground="{StaticResource FontsBrash}"
                                              ToolTip="Warunkiem zaznaczenia tej kontrolki jest zaimportowanie klucza."/>
                         </Grid>
@@ -102,7 +102,7 @@
                                   Background="{StaticResource FontsBrash}"
                                   Checked="PrivateKeyShowCheckBox_Checked"
                                   Unchecked="PrivateKeyShowCheckBox_Unchecked"
-                                  ToolTip="Jeżeli nie ten punkt nie jest zaznaczony to jest wyświetlany tylko publiczny klucz."
+                                  ToolTip="Jeżeli ten punkt nie jest zaznaczony to jest wyświetlany tylko publiczny klucz."
                                   >
                             <TextBlock Text="Pokaż klucz prywatny i publiczny." 
                                            TextWrapping="Wrap"/>
@@ -111,24 +111,37 @@
                         <Separator/>
                     </StackPanel>
                     
-                    <StackPanel Grid.Row="1">
+                    <Grid Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
                         <TextBlock Text="Eksport kluczy" 
                                    TextAlignment="Center" 
                                    Foreground="{StaticResource EnabledBrash}"
+                                   Grid.Row="0"
                                    />
                         <CheckBox Name="cbPublicAndPrivateKeyExport" Background="{StaticResource FontsBrash}" 
-                                      Grid.Row="1"
-                                      IsEnabled="False">
+                                  IsEnabled="False"
+                                  Grid.Row="1">
                             <TextBlock Text="Mają być eksportowane do pliku klucze, prywatny i publiczny." 
                                            TextWrapping="Wrap"
                                            ToolTip="Jeżeli nie zostanie zazaczone to pole to zostanie wysłany tylko klucz publiczny."/>
                         </CheckBox>
-                    </StackPanel>
+                        <fa:ImageAwesome Icon="InfoCircle" 
+                                             Grid.Row="1"
+                                             Height="16"
+                                             VerticalAlignment="Center" 
+                                             HorizontalAlignment="Right" 
+                                             Margin="0 0 15 0"
+                                             Foreground="{StaticResource FontsBrash}"
+                                             ToolTip="Warunkiem zaznaczenia tej kontrolki jest wygenerowanie kluczy asymetrycznych."/>
+                    </Grid>
                     <Button Click="aboutButton_Click" 
                             Width="40" 
                             Height="40" Grid.Row="2"  
                             VerticalAlignment="Bottom" >
-                        <fa:ImageAwesome Icon="Bug" 
+                        <fa:ImageAwesome Icon="AddressCard" 
                                          VerticalAlignment="Bottom" 
                                          HorizontalAlignment="Center" 
                                          Foreground="{StaticResource FontsBrash}" />
@@ -226,6 +239,7 @@
                         <Button Content="Zaszyfruj"  
                                 Name="buttonEncryptFile" 
                                 Click="buttonEncryptFile_Click" 
+                                IsEnabled="False"
                                 />
 
                         <Button Content="Wybierz plik do odszyfrowania"  
@@ -236,6 +250,7 @@
                         <Button Content="Odszyfruj"  
                                 Name="buttonDecryptFile" 
                                 Click="buttonDecryptFile_Click" 
+                                IsEnabled="False"
                                 />
 
                         <Button Content="Eksport klucza publicznego" 
